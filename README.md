@@ -109,7 +109,7 @@ git commit -m "feat: ajout de la fonction add_materiel" (exemple)
 git push origin main
 ```
 
-* Pull régulièrement pour récupérer les changements des autres.
+* Git fetch et Git Pull régulièrement pour récupérer les changements des autres.
 
 ---
 
