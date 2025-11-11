@@ -1,7 +1,3 @@
-Parfait ! Je vais compléter ton README avec **des instructions claires pour que chaque membre configure son environnement, crée son venv, installe Django, et puisse commencer à travailler sur le projet**, tout en gardant SQLite pour la base. Voici une version mise à jour :
-
----
-
 # 🖥️ Projet Python – Gestion d’inventaire de matériels informatiques
 
 ## 🎯 Objectif
@@ -125,7 +121,3 @@ git push origin main
 Objectif : apprendre Python, collaborer efficacement et livrer une application fonctionnelle.
 
 ---
-
-Si tu veux, je peux aussi te **préparer un petit guide visuel “étapes pour commencer le projet Django pour tous les membres”** que vous pourrez mettre dans GitHub ou Messenger pour que personne ne soit bloqué.
-
-Veux‑tu que je fasse ça ?
