@@ -32,7 +32,7 @@ Les fonctionnalités principales incluent :
 | **Membre 3** | Développeur CRUD (Suppression)           | Implémente `delete_materiel()` avec confirmation avant suppression. Gère les erreurs liées aux identifiants inexistants.                                               |
 | **Membre 4** | Développeur CRUD (Affichage / Recherche) | Crée la fonction `list_materiel()` et les filtres de recherche. Affiche les matériels selon plusieurs critères (type, état, disponibilité…).                           |
 | **Membre 5** | Gestion base de données                  | Crée et maintient la base **SQLite** (`inventaire.db`). Définit les tables (`materiel`, `utilisateur`). Assure l’intégrité et les tests de connexion.                  |
-| **Membre 6** | Interface utilisateur (UI)               | Conçoit l’interface avec **Streamlit**, relie les fonctions CRUD à l’UI, ajoute les graphiques et le tableau de bord pour les statistiques.                            |
+| **Membre 6** | Interface utilisateur (UI)               | Conçoit l’interface avec, relie les fonctions CRUD à l’UI, ajoute les graphiques et le tableau de bord pour les statistiques (facultatif).                            |
 
 ---
 
