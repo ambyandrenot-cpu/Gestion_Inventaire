@@ -15,7 +15,6 @@ Les fonctionnalités principales incluent :
 * **Python 3**
 * **SQLite3** pour la base de données locale
 * **Django** pour le framework web
-* **Git & GitHub** pour la collaboration
 
 ---
 
@@ -39,8 +38,8 @@ Pour que tout le monde travaille sur le même projet correctement :
 ### 1️⃣ Cloner le projet depuis GitHub
 
 ```bash
-git clone <URL_DU_REPO>
-cd nom_du_projet
+git clone git@github.com:ambyandrenot-cpu/Gestion_Inventaire.git
+cd Gestion_Inventaire
 ```
 
 ### 2️⃣ Créer et activer un environnement virtuel (venv)
@@ -48,9 +47,8 @@ cd nom_du_projet
 Chaque membre **crée son propre venv** sur sa machine :
 
 ```bash
-python3 -m venv venv          # crée le venv
-source venv/bin/activate      # macOS / Linux
-# venv\Scripts\activate       # Windows
+python3 -m venv venv        # crée le venv
+venv\Scripts\activate       # Windows
 ```
 
 ### 3️⃣ Installer les dépendances
