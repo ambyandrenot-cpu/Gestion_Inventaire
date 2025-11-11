@@ -105,7 +105,7 @@ python manage.py runserver
 
 ```bash
 git add .
-git commit -m "feat: ajout de la fonction add_materiel"
+git commit -m "feat: ajout de la fonction add_materiel" (exemple)
 git push origin main
 ```
 
