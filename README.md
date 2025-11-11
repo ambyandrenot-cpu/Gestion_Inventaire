@@ -12,9 +12,6 @@ Les fonctionnalités principales incluent :
 
 * Ajout, modification, suppression et affichage des matériels (CRUD)
 * Stockage dans une base **SQLite**
-* Interface simple avec **Streamlit**
-* Export des données (CSV / PDF)
-* Statistiques et tableau de bord
 
 ---
 
