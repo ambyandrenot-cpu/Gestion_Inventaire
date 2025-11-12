@@ -119,3 +119,14 @@ select:focus, input:focus {
         width: 100%;
     }
 }
+
+.boutton{
+    color: #dc2626;
+}
+#delete{
+    color: darkorange;
+
+}
+#delete:hover{
+    color: #b91c1c;
+}

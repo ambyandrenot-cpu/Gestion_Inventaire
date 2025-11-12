@@ -94,7 +94,7 @@
                 <table id="deviceTable" class="custom-table w-full mb-4">
                     <thead>
                         <tr>
-                            <th class="w-1/12">#</th>
+                            <th class="w-1/12">id</th>
                             <th class="w-2/12">Nom</th>
                             <th class="w-1/12">Type d'appareil</th>
                             <th class="w-2/12">Numéro de série</th>
@@ -102,7 +102,7 @@
                             <th class="w-1/12 no-print">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="deviceTableBody">
+                    <tbody >
                         <!-- Le contenu sera rempli dynamiquement -->
                     </tbody>
                 </table>
@@ -123,19 +123,19 @@
                 <input type="hidden" id="editId" value="">
                 
                 <div>
-                    <label for="clientName" class="block text-gray-700 mb-2">Nom du client:</label>
-                    <input type="text" id="clientName" class="w-full" required>
+                    <label  for="clientName" class="block text-gray-700 mb-2">Nom du client:</label>
+                    <input type="text" id="nom" class="w-full" required>
                 </div>
                 
                 <div>
                     <label for="workplaceInput" class="block text-gray-700 mb-2">Lieu de travail:</label>
-                    <input type="text" id="workplaceInput" class="w-full" required>
+                    <input type="text" id="lieu" class="w-full" required>
                 </div>
                 
                 <div>
                     <label for="deviceType" class="block text-gray-700 mb-2">Type d'appareil:</label>
                     <div class="flex space-x-2">
-                        <select id="deviceType" class="w-full" required>
+                        <select id="type" class="w-full" required>
                             <option value="DP1400">DP1400</option>
                             <option value="XT420">XT420</option>
                             <option value="CP040">CP040</option>
@@ -156,12 +156,12 @@
                 
                 <div>
                     <label for="serialNumber" class="block text-gray-700 mb-2">Numéro de série:</label>
-                    <input type="text" id="serialNumber" class="w-full" required>
+                    <input type="text" id="num" class="w-full" required>
                 </div>
                 
                 <div>
                     <label for="deviceStatus" class="block text-gray-700 mb-2">État de l'appareil:</label>
-                    <select id="deviceStatus" class="w-full" required>
+                    <select id="etat" class="w-full" required>
                         <option value="Bonne">Bonne</option>
                         <option value="Mauvais">Mauvais</option>
                         <option value="Défectueux">Défectueux</option>
@@ -170,7 +170,7 @@
                 
                 <div class="flex justify-end space-x-2 pt-4">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
-                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button onclick="ajouterElement()" class="btn-primary">Enregistrer</button>
                 </div>
             </form>
         </div>

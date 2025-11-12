@@ -1,4 +1,8 @@
+ let materiels = JSON.parse(localStorage.getItem('materiels')) || [];
+ let idCounter = materiels.length > 0 ? Math.max(...materiels.map(m => m.id)) + 1 : 1;
+        
 // Variables globales
+
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let deviceData = {};
@@ -377,3 +381,78 @@ function toggleExportMenu() {
 
 // Exportation en Excel
 function exportToExcel() {}
+
+
+  // Fonction pour afficher la liste
+        function afficherListe() {
+            const tbody = document.querySelector('#deviceTable tbody');
+            tbody.innerHTML = '';
+            materiels.forEach(materiel => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                 <td>${materiel.id}</td>
+                <td>${materiel.nom}</td>
+                <td>${materiel.type}</td>
+                <td>${materiel.num}</td>
+                <td>${materiel.etat}</td>
+                    <td class="boutton">
+                        <button id="delete"onclick="modifierElement(${materiel.id})">Mettre à jour</button>
+                        <button id="delete" onclick="supprimerElement(${materiel.id})">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        // Fonction pour ajouter un élément
+        function ajouterElement() {
+            const nom = document.getElementById('nom').value.trim();
+            const type = document.getElementById('type').value;
+            const num = document.getElementById('num').value.trim();
+            const etat = document.getElementById('etat').value.trim();
+                        
+            if (!nom || !type || !num || !etat) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+            
+            const nouvelElement = {
+                id: idCounter++,
+                nom: nom,
+                type: type,
+                num: num,
+                etat:etat
+            };
+            
+            materiels.push(nouvelElement);
+            sauvegarderEtAfficher();
+            
+            // Réinitialiser le formulaire
+            document.getElementById('nom').value = '';
+            document.getElementById('type').value = '';
+             document.getElementById('num').value = '';
+              document.getElementById('etat').value = '';
+        }
+
+         // Fonction utilitaire pour sauvegarder et afficher
+        function sauvegarderEtAfficher() {
+            localStorage.setItem('materiels', JSON.stringify(materiels));
+            afficherListe();
+        }
+        
+        // Afficher la liste au chargement de la page
+        afficherListe();
+        
+         // Fonction pour supprimer un élément
+        function supprimerElement(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+                materiels = materiels.filter(m => m.id !== id);
+                sauvegarderEtAfficher();
+            }
+        }
+
+        document.getElementById('monFormulaire').addEventListener('submit', function(e) {
+    e.preventDefault(); // Empêche la soumission classique
+    // Ici, vous pouvez traiter ou enregistrer le contenu
+    // Ensuite, pour fermer ou masquer le formulaire :
+    this.style.display = 'none'; // Masquer le formulaire
+  });
