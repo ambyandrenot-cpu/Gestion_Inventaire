@@ -2,6 +2,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.main_view, name='main'),
 ]
-# C’est ici qu’on relie les pages (routes).

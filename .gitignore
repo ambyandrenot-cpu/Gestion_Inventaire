@@ -18,6 +18,7 @@ db.sqlite3
 # --- Migrations compilées ---
 **/migrations/*.pyc
 **/migrations/__pycache__/
+gestion/migrations
 
 # --- Fichiers temporaires ---
 *.log

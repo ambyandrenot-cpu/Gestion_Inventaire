@@ -95,6 +95,12 @@ select:focus, input:focus {
     color: white;
 }
 
+.custom-table td {
+    color: black !important;
+    border: 1px solid #ddd;
+}
+
+
 /* CORRECTION : J'ai ajouté @media print ici, car il manquait un sélecteur */
 @media print {
     body {

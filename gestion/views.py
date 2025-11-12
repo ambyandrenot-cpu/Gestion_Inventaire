@@ -1,6 +1,7 @@
 from django.shortcuts import render
+from .models import Materiel
 
-def home(request):
-    # Affiche la page main.html
-    return render(request, 'gestion/main.html')
-# C’est ici qu’on met la logique — afficher la liste, ajouter, modifier, supprimer..
+def main_view(request):
+    materiels = Materiel.objects.all()
+    print("💡 Vue exécutée : main_view —", materiels)
+    return render(request, 'gestion/main.html', {'materiels': materiels})
