@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fa;
+    min-height: 100vh;
+}
+
+.animate-pulse-slow {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.custom-table th, .custom-table td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.custom-table th {
+    background-color: #1e40af;
+    color: white;
+    font-weight: 500;
+}
+
+.custom-table tr:nth-child(even) {
+    background-color: #edf2f7;
+}
+
+.custom-table tr:hover {
+    background-color: #e2e8f0;
+}
+
+.btn-primary {
+    background-color: #1e40af;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #1c366b;
+}
+
+.btn-secondary {
+    background-color: #4b5563;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #374151;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+select, input {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: #fff;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+}
+
+.tab-active {
+    background-color: #1e40af;
+    color: white;
+}
+
+/* CORRECTION : J'ai ajouté @media print ici, car il manquait un sélecteur */
+@media print {
+    body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-container {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    table {
+        page-break-inside: avoid;
+        width: 100%;
+    }
+}
