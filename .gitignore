@@ -1,0 +1,54 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*$py.class
+
+# --- Environnement virtuel ---
+venv/
+env/
+.venv/
+
+# --- Django & Base de données ---
+db.sqlite3
+*.db
+*.sqlite3
+
+# --- Migrations compilées ---
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+# --- Fichiers temporaires ---
+*.log
+*.pot
+*.mo
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# --- Cache & config utilisateur ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace
+
+# --- Python packaging ---
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Configuration système macOS ---
+.AppleDouble
+.LSOverride
+Icon?
+.Spotlight-V100
+.Trashes
+._*
+
+# --- Django static/media (si générés dynamiquement) ---
+staticfiles/
+media/
