@@ -1,3 +1,3 @@
 from django.shortcuts import render
 
-# Create your views here.
+# C’est ici qu’on met la logique — afficher la liste, ajouter, modifier, supprimer..
