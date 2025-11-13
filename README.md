@@ -119,3 +119,59 @@ git push origin main
 Objectif : apprendre Python, collaborer efficacement et livrer une application fonctionnelle.
 
 ---
+
+Voici une version claire et bien structurée à mettre dans ton **README.md**, que toute l’équipe pourra comprendre 👇
+
+---
+
+
+## 🚀 Versions du projet “Gestion d’Inventaire”
+
+### **v1 – Version initiale (CRUD de base + affichage global)**
+
+Cette première version met en place toutes les fonctionnalités essentielles :
+
+* Création, lecture, modification et suppression (CRUD) des matériels.
+* Affichage de la **liste complète des matériels** dans le tableau principal.
+* Affichage du **nombre total de matériels** en haut de la page.
+
+> Objectif : Avoir une base stable et fonctionnelle du projet.
+
+---
+
+### **v2 – Gestion des emprunts et disponibilité**
+
+Dans cette version, on améliore la visibilité et la gestion des stocks :
+
+* Ajout de **deux nouvelles colonnes** dans l’interface :
+
+  * *Matériels empruntés*
+  * *Matériels disponibles*
+* Ajout d’un **bouton “Emprunter”** à côté de chaque matériel pour marquer un emprunt.
+* Mise à jour **automatique** du nombre de matériels disponibles dès qu’un emprunt est effectué.
+
+> Objectif : Simuler une gestion réelle des emprunts et des disponibilités.
+
+---
+
+### **v3 – Ajustement dynamique des quantités**
+
+Amélioration de la logique d’édition :
+
+* Possibilité de **modifier le nombre total de matériels et le nombre de disponibles** directement depuis le formulaire de modification.
+* Dans la version précédente (v2), seul le *nombre total* était modifiable.
+
+> Objectif : Permettre une mise à jour cohérente des données lors de changements physiques du stock.
+
+---
+
+### **v4 – Ajout des filtres côté backend**
+
+Mise en place d’un système de filtres pour améliorer la recherche et le tri des matériels :
+
+* Implémentation de **filtres côté serveur (backend)** pour filtrer les matériels par type, état, disponibilité, etc.
+* Affichage des options de filtre sur la page principale pour l’utilisateur.
+
+> Objectif : Faciliter la navigation et la gestion dans de grands inventaires.
+
+---
