@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import Materiel
-# Register your models here.
 
 @admin.register(Materiel)
 class MaterielAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nom', 'type_appareil', 'numero_serie', 'etat')
-    search_fields = ('nom', 'type_appareil', 'numero_serie')
+    list_display = ('id', 'nom', 'categorie', 'quantite', 'etat', 'date_ajout')
+    search_fields = ('nom', 'categorie')
+    list_filter = ('etat', 'categorie')
