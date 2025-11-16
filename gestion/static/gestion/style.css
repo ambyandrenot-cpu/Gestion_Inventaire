@@ -38,7 +38,7 @@ body {
     background-color: #e2e8f0;
 }
 
-.btn-primary {
+/* .btn-primary {
     background-color: #1e40af;
     color: white;
     padding: 0.5rem 1rem;
@@ -75,7 +75,7 @@ body {
 
 .btn-danger:hover {
     background-color: #b91c1c;
-}
+} */
 
 select, input {
     padding: 0.5rem;

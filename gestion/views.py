@@ -47,7 +47,7 @@ def ajouter_materiel(request):
         form = MaterielForm(request.POST)
         if form.is_valid():
             form.save()
-    return redirect("liste_materiels")
+            return redirect("liste_materiels")
 
 
 def modifier_materiel(request, pk):
@@ -56,12 +56,22 @@ def modifier_materiel(request, pk):
         form = MaterielForm(request.POST, instance=materiel)
         if form.is_valid():
             form.save()
-    return redirect("liste_materiels")
+            return redirect("liste_materiels")
 
 
 def supprimer_materiel(request, pk):
     materiel = get_object_or_404(Materiel, id=pk)
     materiel.delete()
+    return redirect("liste_materiels")
+
+// on defini ici la fonciton pour emprunter un appareil
+def emprunter_materiel(request, pk):
+    materiel = get_object_or_404(Materiel, id=pk)
+
+    if materiel.disponible > 0:
+        materiel.quantite_empruntee += 1
+        materiel.save()
+
     return redirect("liste_materiels")
 
 def exporter_excel(request):
