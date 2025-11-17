@@ -64,14 +64,21 @@ def supprimer_materiel(request, pk):
     materiel.delete()
     return redirect("liste_materiels")
 
-// on defini ici la fonciton pour emprunter un appareil
+# on defini ici la fonciton pour emprunter un appareil
 def emprunter_materiel(request, pk):
     materiel = get_object_or_404(Materiel, id=pk)
 
     if materiel.disponible > 0:
         materiel.quantite_empruntee += 1
         materiel.save()
+    return redirect("liste_materiels")
 
+def rendre_materiel(request, pk):
+    materiel = get_object_or_404(Materiel, id=pk)
+
+    if materiel.quantite_empruntee > 0:
+        materiel.quantite_empruntee -= 1
+        materiel.save()
     return redirect("liste_materiels")
 
 def exporter_excel(request):
@@ -81,12 +88,12 @@ def exporter_excel(request):
     ws.title = "Matériels"
 
     # Entête
-    ws.append(['ID', 'Nom', 'Description', 'Etat'])
+    ws.append(['ID', 'Nom', 'Catégorie', 'Etat', 'Empruntés', 'Disponible'])
 
     # Donnee
     materiels = Materiel.objects.all()
     for m in materiels:
-        ws.append([m.id, m.nom, m.description, m.etat])
+        ws.append([m.id, m.nom, m.categorie, m.etat, m.quantite_empruntee, m.disponible])
 
     # Preparer la réponse HTTP
     response = HttpResponse(
