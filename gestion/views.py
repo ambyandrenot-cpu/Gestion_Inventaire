@@ -1,20 +1,16 @@
-# C'est ici que tout les logiques metiers CRUD se passe, le point reliant entre le models(BDD) et le templates(affichage)
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from .models import Materiel
-from .forms import MaterielForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 import openpyxl
 from openpyxl.styles import Font
+from .models import Materiel,Demande # Ajoutez Demande si nécessaire
+from .forms import MaterielForm
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.cache import never_cache
 
 def liste_materiels(request):
     action = request.GET.get("action")
@@ -37,7 +33,6 @@ def liste_materiels(request):
     query = request.GET.get("q", "")
     materiels = Materiel.objects.all().order_by('-date_ajout')
     if query:
-        # On filtre : Soit le nom contient le texte, SOIT la catégorie contient le texte
         materiels = materiels.filter(
             Q(nom__icontains=query) | Q(categorie__icontains=query)
         )
@@ -51,50 +46,29 @@ def liste_materiels(request):
         "query": query,
     })
 
-
 def ajouter_materiel(request):
-    """
-    Traite l'ajout d'un nouveau matériel. 
-    Initialise la quantité 'bon' par défaut à la quantité totale saisie.
-    """
     if request.method == "POST":
         form = MaterielForm(request.POST)
         if form.is_valid():
             m = form.save(commit=False)
-            
-            # 1. Récupérer le total saisi
             total = m.quantite
-            
-            # 2. Initialiser quantite_bon. 
-            # Si l'utilisateur n'a pas (ou a mis 0 dans) quantite_mauvais, 
-            # on suppose que tout le stock est en bon état par défaut.
             if m.quantite_mauvais == 0:
                 m.quantite_bon = total
-            
-            # 3. La méthode save() dans models.py s'occupera ensuite de la cohérence 
-            # (quantite_bon = quantite - quantite_mauvais) si les trois champs ont été remplis.
-            
-            # --- Fin de la logique d'initialisation ---
-            
             m.save()
     return redirect("liste_materiels")
-
 
 def modifier_materiel(request, pk):
     materiel = get_object_or_404(Materiel, id=pk)
     if request.method == "POST":
         form = MaterielForm(request.POST, instance=materiel)
         if form.is_valid():
-            # On sauvegarde: save() du model mettra à jour quantite
             form.save()
     return redirect("liste_materiels")
-
 
 def supprimer_materiel(request, pk):
     materiel = get_object_or_404(Materiel, id=pk)
     materiel.delete()
     return redirect("liste_materiels")
-
 
 def exporter_excel(request):
     wb = openpyxl.Workbook()
@@ -123,26 +97,10 @@ def exporter_excel(request):
     wb.save(response)
     return response
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            messages.success(request, f'Bienvenue {username}!')
-            return redirect('dashboard')  # Redirection après connexion
-        else:
-            messages.error(request, 'Identifiants incorrects')
-    
-    return render(request, 'login.html')
-
 def custom_login(request):
     # Si l'utilisateur est déjà connecté, redirigez-le vers liste_demande
     if request.user.is_authenticated:
-        return redirect('liste_demande')  # ← Changement ici
+        return redirect('liste_demande')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -153,17 +111,75 @@ def custom_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Bienvenue {username} !')
-            return redirect('liste_demande')  # ← Changement ici
+            return redirect('liste_demande')
         else:
             messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.')
     
     return render(request, 'gestion/login.html')
 
-    @login_required
-    def liste_demande(request):
-    # Votre logique pour la liste des demandes
-        context = {
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        email = request.POST.get('email')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        
+        # Validation des données
+        if password != confirm_password:
+            messages.error(request, 'Les mots de passe ne correspondent pas')
+            return render(request, 'gestion/login.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Ce nom d\'utilisateur existe déjà')
+            return render(request, 'gestion/login.html')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Cet email est déjà utilisé')
+            return render(request, 'gestion/login.html')
+        
+        # Créer l'utilisateur
+        try:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                email=email,
+                first_name=first_name,
+                last_name=last_name
+            )
+            messages.success(request, 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
+            return redirect('custom_login')  # Rediriger vers la page de connexion
+            
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la création du compte: {str(e)}')
+            return render(request, 'gestion/login.html')
+    
+    return render(request, 'gestion/login.html')
+
+@login_required
+@never_cache
+def liste_demande(request):
+    # Votre logique pour afficher les demandes
+    # Seuls les utilisateurs connectés peuvent accéder à cette vue
+    try:
+        demandes = Demande.objects.all()  # Assurez-vous que le modèle Demande existe
+    except:
+        demandes = []  # Liste vide si le modèle n'existe pas encore
+    
+    context = {
+        'user': request.user,
+        'demandes': demandes,
         'title': 'Liste des Demandes',
         'message': 'Bienvenue sur la page des demandes'
     }
     return render(request, 'gestion/liste_demande.html', context)
+
+
+@require_http_methods(["POST"])
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Vous avez été déconnecté avec succès. Veuillez vous reconnecter.')
+    return redirect('login')
+

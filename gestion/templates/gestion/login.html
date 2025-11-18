@@ -26,43 +26,94 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <div class="card login-card">
                     <div class="card-header py-4">
-                        <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Connexion</h4>
+                        <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Plateforme Demandes</h4>
                         <small class="opacity-75">Accédez à la liste des demandes</small>
                     </div>
                     <div class="card-body p-4">
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
                                     {{ message }}
                                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                 </div>
                             {% endfor %}
                         {% endif %}
-                        
-                        <form method="post">
+
+                        <!-- Formulaire de Connexion -->
+                        <h5 class="mb-3"><i class="fas fa-sign-in-alt me-2 text-primary"></i>Connexion</h5>
+                        <form method="post" action="{% url 'login' %}">
                             {% csrf_token %}
                             
-                            <div class="mb-3">
-                                <label for="username" class="form-label">
-                                    <i class="fas fa-user me-2 text-primary"></i>Nom d'utilisateur
-                                </label>
-                                <input type="text" class="form-control form-control-lg" id="username" 
+                            <div class="mb-3"  autocomplete="off">
+                                <label for="username" class="form-label">Nom d'utilisateur</label>
+                                <input type="text" class="form-control" id="username" 
                                        name="username" placeholder="Votre nom d'utilisateur" required>
                             </div>
                             
-                            <div class="mb-4">
-                                <label for="password" class="form-label">
-                                    <i class="fas fa-lock me-2 text-primary"></i>Mot de passe
-                                </label>
-                                <input type="password" class="form-control form-control-lg" id="password" 
+                            <div class="mb-3"  autocomplete="off">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" 
                                        name="password" placeholder="Votre mot de passe" required>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-2 mb-4">
                                 <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </button>
+                        </form>
+
+                        <!-- Séparateur -->
+                        <div class="text-center my-4">
+                            <hr>
+                            <span class="bg-white px-3 text-muted">OU</span>
+                        </div>
+
+                        <!-- Formulaire d'Inscription -->
+                        <h5 class="mb-3"><i class="fas fa-user-plus me-2 text-success"></i>Créer un compte</h5>
+                        <form method="post" action="{% url 'register' %}">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" id="first_name" 
+                                           name="first_name" placeholder="Votre prénom" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="last_name" 
+                                           name="last_name" placeholder="Votre nom" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" 
+                                       name="email" placeholder="votre@email.com" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="register_username" class="form-label">Nom d'utilisateur</label>
+                                <input type="text" class="form-control" id="register_username" 
+                                       name="username" placeholder="Choisissez un nom d'utilisateur" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="register_password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="register_password" 
+                                       name="password" placeholder="Créez un mot de passe" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmer le mot de passe</label>
+                                <input type="password" class="form-control" id="confirm_password" 
+                                       name="confirm_password" placeholder="Confirmez votre mot de passe" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success btn-lg w-100 py-2">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire
                             </button>
                         </form>
 
@@ -71,9 +122,6 @@
                                 <i class="fas fa-arrow-left me-1"></i> Retour à l'accueil
                             </a>
                         </div>
-                    </div>
-                    <div class="card-footer text-center text-muted py-3">
-                        <small>Redirection vers la liste des demandes après connexion</small>
                     </div>
                 </div>
             </div>

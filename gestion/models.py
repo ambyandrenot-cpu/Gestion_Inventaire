@@ -1,5 +1,7 @@
 # C’est ici qu’on définit les tables de la base de données..
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 
 class Materiel(models.Model):
     nom = models.CharField(max_length=100)
@@ -75,3 +77,42 @@ class Materiel(models.Model):
 
     def __str__(self):
         return self.nom
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    telephone = models.CharField(max_length=20, blank=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    
+    # Ajouter related_name personnalisé pour éviter les conflits
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='customuser_set',  # ← CHANGEMENT ICI
+        related_query_name='customuser',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='customuser_set',  # ← CHANGEMENT ICI
+        related_query_name='customuser',
+    )
+    
+    def __str__(self):
+        return self.username
+    
+class Demande(models.Model):
+    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE)
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    quantite_demandee = models.IntegerField()
+    date_demande = models.DateTimeField(auto_now_add=True)
+    statut = models.CharField(max_length=20, choices=[
+        ('en_attente', 'En attente'),
+        ('approuvee', 'Approuvée'),
+        ('refusee', 'Refusée')
+    ], default='en_attente')
+    
+    def __str__(self):
+        return f"{self.utilisateur.username} - {self.materiel.nom}"

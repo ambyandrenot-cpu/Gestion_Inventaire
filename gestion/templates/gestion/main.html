@@ -123,19 +123,19 @@
                     </td>
 
                     <td class="px-4 py-3">{{ materiel.quantite_bon }}</td>
-<td class="px-4 py-3">{{ materiel.quantite_mauvais }}</td>
+                        <td class="px-4 py-3">{{ materiel.quantite_mauvais }}</td>
 
-<td class="px-4 py-3 text-right space-x-2 flex justify-end">
+                        <td class="px-4 py-3 text-right space-x-2 flex justify-end">
 
-    <a href="?action=edit&id={{ materiel.id }}" class="btn btn-dash btn-warning">Modifier</a>
-    <a href="?action=delete&id={{ materiel.id }}" class="btn btn-soft btn-error">Supprimer</a>
-</td>
+                 <a href="?action=edit&id={{ materiel.id }}" class="btn btn-dash btn-warning">Modifier</a>
+              <a href="?action=delete&id={{ materiel.id }}" class="btn btn-soft btn-error">Supprimer</a>
+            </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
+     </div>
 
     <!-- FOOTER -->
     <footer class="text-center text-gray-700 mt-8">

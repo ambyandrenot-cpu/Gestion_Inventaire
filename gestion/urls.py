@@ -12,6 +12,8 @@ urlpatterns = [
         template_name='gestion/login.html',  # ← chemin complet
         redirect_authenticated_user=True
     ), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+       path('logout/', views.logout_view, name='logout'),
     path('demandes/', views.liste_demande, name='liste_demande'),
+    path('register/', views.register_view, name='register'),
+    path('custom_login/', auth_views.LoginView.as_view(template_name='login.html'), name='custom_login'),
 ]
