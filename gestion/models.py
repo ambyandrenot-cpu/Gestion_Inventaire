@@ -23,14 +23,25 @@ class Materiel(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Garantir la cohérence :
-        - si quantite_bon + quantite_mauvais != quantite, on corrige quantite automatiquement
-        - si quantite > 0 et un champ est supérieur, on ajuste rien (on laisse les valeurs fournies)
+        Garantir la cohérence : 
+        - Si la somme des parties dépasse le total saisi, on ajuste la quantité totale 
+          à la somme des parties pour garantir l'intégrité des données.
+        - On laisse l'utilisateur saisir les trois champs.
         """
-        total = self.quantite_bon + self.quantite_mauvais
-        if total != self.quantite:
-            # On met à jour quantite pour refléter la somme des états
-            self.quantite = total
+        total_parts = self.quantite_bon + self.quantite_mauvais
+        
+        # Logique de cohérence:
+        # Si la quantité saisie est inférieure à la somme des parties,
+        # cela signifie que le total est incorrect. On corrige le total
+        # pour correspondre à la somme des parties.
+        if self.quantite < total_parts:
+            self.quantite = total_parts
+            
+        # Alternative (plus stricte, mais cohérente):
+        # Si l'utilisateur saisit un total > 0, mais que la somme des parties est 0, 
+        # il y a une incohérence potentielle. Pour l'instant, on laisse la valeur saisie 
+        # tant qu'elle est >= total_parts.
+
         super().save(*args, **kwargs)
 
     @property

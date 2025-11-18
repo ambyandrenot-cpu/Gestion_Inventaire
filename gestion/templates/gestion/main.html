@@ -174,10 +174,11 @@
                 </div>
             
                 <div>
-                    <!-- affichage indicatif de la quantite totale (non editable) -->
-                    <label class="block text-gray-700 mb-2">Quantité totale</label>
-                    <input type="text" readonly value="{{ edit_obj.quantite|default:0 }}" class="w-full p-2 border rounded-lg bg-gray-100">
-
+                    {{ form.quantite.label_tag }}
+                        {{ form.quantite }}
+                    {% if form.quantite.errors %}
+                        <p class="text-red-600 text-sm">{{ form.quantite.errors }}</p>
+                    {% endif %}
                 </div>
             
                 <div class="grid grid-cols-2 gap-4">
