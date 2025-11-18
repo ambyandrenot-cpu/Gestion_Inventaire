@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from .models import Materiel
 from .forms import MaterielForm
+from django.db.models import Q
 import openpyxl
 from openpyxl.styles import Font
 
@@ -26,10 +27,12 @@ def liste_materiels(request):
         delete_obj = get_object_or_404(Materiel, id=id_materiel)
 
     query = request.GET.get("q", "")
+    materiels = Materiel.objects.all().order_by('-date_ajout')
     if query:
-        materiels = Materiel.objects.filter(nom__icontains=query)
-    else:
-        materiels = Materiel.objects.all()
+        # On filtre : Soit le nom contient le texte, SOIT la catégorie contient le texte
+        materiels = materiels.filter(
+            Q(nom__icontains=query) | Q(categorie__icontains=query)
+        )
 
     return render(request, "gestion/main.html", {
         "materiels": materiels,
