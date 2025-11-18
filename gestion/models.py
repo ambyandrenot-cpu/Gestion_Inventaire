@@ -23,24 +23,43 @@ class Materiel(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Garantir la cohérence : 
-        - Si la somme des parties dépasse le total saisi, on ajuste la quantité totale 
-          à la somme des parties pour garantir l'intégrité des données.
-        - On laisse l'utilisateur saisir les trois champs.
-        """
-        total_parts = self.quantite_bon + self.quantite_mauvais
+        Nouvelle logique de cohérence :
+        Le total (quantite) est le maître. 
+        Bon est déduit de (Total - Mauvais), ou Mauvais est déduit de (Total - Bon).
+        Puisque l'utilisateur modifie Bon ET Mauvais, nous devons laisser l'utilisateur
+        modifier les deux et nous assurer que le Total est correct.
         
-        # Logique de cohérence:
-        # Si la quantité saisie est inférieure à la somme des parties,
-        # cela signifie que le total est incorrect. On corrige le total
-        # pour correspondre à la somme des parties.
-        if self.quantite < total_parts:
-            self.quantite = total_parts
+        MAIS, selon votre demande (Bon se modifie en même temps que Mauvais), 
+        cela implique que : Bon = Total - Mauvais.
+        
+        Nous devons nous assurer que Mauvais et Bon n'excèdent pas Total.
+        """
+        
+        # 1. Assurer que la somme des parties n'est pas supérieure au total saisi
+        total_parts = self.quantite_bon + self.quantite_mauvais
+        if total_parts > self.quantite:
+            # Si la somme est supérieure au total, on doit déduire l'excédent de l'une des parties.
+            # Supposons que l'utilisateur a modifié Mauvais, on ajuste Bon.
+            self.quantite_bon = self.quantite - self.quantite_mauvais
             
-        # Alternative (plus stricte, mais cohérente):
-        # Si l'utilisateur saisit un total > 0, mais que la somme des parties est 0, 
-        # il y a une incohérence potentielle. Pour l'instant, on laisse la valeur saisie 
-        # tant qu'elle est >= total_parts.
+            # Si le quantite_mauvais est aussi trop grand (cas extrême), on le limite.
+            if self.quantite_bon < 0:
+                 self.quantite_bon = 0
+                 self.quantite_mauvais = self.quantite
+        
+        # 2. Après l'ajustement, le total doit toujours être Bon + Mauvais.
+        #    Puisque nous avons limité Bon et Mauvais pour qu'ils ne dépassent pas Quantite,
+        #    nous laissons le total saisi par l'utilisateur.
+
+        # 3. L'ajustement demandé : Quand on modifie Mauvais, Bon s'ajuste.
+        #    Cette logique est gérée par le `clean` du formulaire pour l'utilisateur,
+        #    mais la ligne ci-dessous assure l'intégrité finale si le total est fixé.
+        self.quantite_bon = self.quantite - self.quantite_mauvais
+        
+        # S'assurer que 'bon' ne devient pas négatif
+        if self.quantite_bon < 0:
+            self.quantite_bon = 0
+            self.quantite_mauvais = self.quantite
 
         super().save(*args, **kwargs)
 

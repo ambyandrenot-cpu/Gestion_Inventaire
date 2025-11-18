@@ -45,11 +45,29 @@ def liste_materiels(request):
 
 
 def ajouter_materiel(request):
+    """
+    Traite l'ajout d'un nouveau matériel. 
+    Initialise la quantité 'bon' par défaut à la quantité totale saisie.
+    """
     if request.method == "POST":
         form = MaterielForm(request.POST)
         if form.is_valid():
             m = form.save(commit=False)
-            # m.quantite sera calculé dans save() du model
+            
+            # 1. Récupérer le total saisi
+            total = m.quantite
+            
+            # 2. Initialiser quantite_bon. 
+            # Si l'utilisateur n'a pas (ou a mis 0 dans) quantite_mauvais, 
+            # on suppose que tout le stock est en bon état par défaut.
+            if m.quantite_mauvais == 0:
+                m.quantite_bon = total
+            
+            # 3. La méthode save() dans models.py s'occupera ensuite de la cohérence 
+            # (quantite_bon = quantite - quantite_mauvais) si les trois champs ont été remplis.
+            
+            # --- Fin de la logique d'initialisation ---
+            
             m.save()
     return redirect("liste_materiels")
 
