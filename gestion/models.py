@@ -3,7 +3,14 @@ from django.db import models
 
 class Materiel(models.Model):
     nom = models.CharField(max_length=100)
-    categorie = models.CharField(max_length=50, default="Inconnu")
+    categorie = models.CharField(
+        max_length=50,
+        choices=[
+            ('Ordinateur', 'Ordinateur'),
+            ('Périphérique', 'Périphérique'),
+            ('Equipement', 'Equipement'),
+        ]
+    )
     quantite = models.PositiveIntegerField()
     quantite_empruntee = models.PositiveIntegerField(default=0)
     date_ajout = models.DateTimeField(auto_now_add=True)

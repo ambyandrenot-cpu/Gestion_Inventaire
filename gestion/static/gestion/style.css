@@ -136,3 +136,6 @@ select:focus, input:focus {
 #delete:hover{
     color: #b91c1c;
 }
+.acc li a{
+    color: #1e40af;
+}

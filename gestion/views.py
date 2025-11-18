@@ -73,6 +73,7 @@ def emprunter_materiel(request, pk):
         materiel.save()
     return redirect("liste_materiels")
 
+#lorsqu'un appareil est rendu
 def rendre_materiel(request, pk):
     materiel = get_object_or_404(Materiel, id=pk)
 
@@ -102,3 +103,6 @@ def exporter_excel(request):
     response['Content-Disposition'] = 'attachment; filename="materiels.xlsx"'
     wb.save(response)
     return response
+
+def home_view(request):
+    return render(request, 'main.html')

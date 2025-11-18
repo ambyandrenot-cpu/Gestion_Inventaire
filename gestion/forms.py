@@ -10,7 +10,7 @@ class MaterielForm(forms.ModelForm):
 
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'w-full p-2 border rounded-lg', 'placeholder': 'Nom'}),
-            'categorie': forms.TextInput(attrs={'class': 'w-full p-2 border rounded-lg', 'placeholder': 'Catégorie'}),
+            'categorie': forms.Select(attrs={'class': 'w-full p-2 border rounded-lg'}),
             'quantite': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded-lg', 'min': 1}),
             'etat': forms.Select(attrs={'class': 'w-full p-2 border rounded-lg'}),
         }
