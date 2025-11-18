@@ -7,7 +7,6 @@ from .forms import MaterielForm
 import openpyxl
 from openpyxl.styles import Font
 
-
 def liste_materiels(request):
     action = request.GET.get("action")
     id_materiel = request.GET.get("id")
@@ -46,8 +45,10 @@ def ajouter_materiel(request):
     if request.method == "POST":
         form = MaterielForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("liste_materiels")
+            m = form.save(commit=False)
+            # m.quantite sera calculé dans save() du model
+            m.save()
+    return redirect("liste_materiels")
 
 
 def modifier_materiel(request, pk):
@@ -55,8 +56,9 @@ def modifier_materiel(request, pk):
     if request.method == "POST":
         form = MaterielForm(request.POST, instance=materiel)
         if form.is_valid():
+            # On sauvegarde: save() du model mettra à jour quantite
             form.save()
-            return redirect("liste_materiels")
+    return redirect("liste_materiels")
 
 
 def supprimer_materiel(request, pk):
@@ -64,45 +66,30 @@ def supprimer_materiel(request, pk):
     materiel.delete()
     return redirect("liste_materiels")
 
-# on defini ici la fonciton pour emprunter un appareil
-def emprunter_materiel(request, pk):
-    materiel = get_object_or_404(Materiel, id=pk)
-
-    if materiel.disponible > 0:
-        materiel.quantite_empruntee += 1
-        materiel.save()
-    return redirect("liste_materiels")
-
-#lorsqu'un appareil est rendu
-def rendre_materiel(request, pk):
-    materiel = get_object_or_404(Materiel, id=pk)
-
-    if materiel.quantite_empruntee > 0:
-        materiel.quantite_empruntee -= 1
-        materiel.save()
-    return redirect("liste_materiels")
 
 def exporter_excel(request):
-    # Creation du classeur Exccel
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Matériels"
 
-    # Entête
-    ws.append(['ID', 'Nom', 'Catégorie', 'Etat', 'Empruntés', 'Disponible'])
+    headers = ['ID', 'Nom', 'Catégorie', 'Quantité totale', 'Bon', 'Mauvais', 'Date d\'ajout']
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
 
-    # Donnee
     materiels = Materiel.objects.all()
-    for m in materiels:
-        ws.append([m.id, m.nom, m.categorie, m.etat, m.quantite_empruntee, m.disponible])
+    for row_idx, m in enumerate(materiels, 2):
+        ws.cell(row=row_idx, column=1, value=m.id)
+        ws.cell(row=row_idx, column=2, value=m.nom)
+        ws.cell(row=row_idx, column=3, value=m.categorie)
+        ws.cell(row=row_idx, column=4, value=m.quantite)
+        ws.cell(row=row_idx, column=5, value=m.quantite_bon)
+        ws.cell(row=row_idx, column=6, value=m.quantite_mauvais)
+        ws.cell(row=row_idx, column=7, value=m.date_ajout.strftime("%Y-%m-%d %H:%M"))
 
-    # Preparer la réponse HTTP
     response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response['Content-Disposition'] = 'attachment; filename="materiels.xlsx"'
+    response["Content-Disposition"] = 'attachment; filename="materiels.xlsx"'
     wb.save(response)
     return response
-
-def home_view(request):
-    return render(request, 'main.html')

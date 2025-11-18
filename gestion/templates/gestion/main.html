@@ -99,10 +99,9 @@
                     <th class="px-4 py-3 font-semibold text-gray-700">Nom</th>
                     <th class="px-4 py-3 font-semibold text-gray-700">Catégorie</th>
                     <th class="px-4 py-3 font-semibold text-gray-700">Quantité</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700">État</th>
                     <th class="px-4 py-3 font-semibold text-gray-700">Date d'ajout</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700">Empruntés</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700">Disponibles</th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">Bon</th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">Mauvais</th>
                     <th class="px-4 py-3 font-semibold text-gray-700 text-right">Actions</th>
                 </tr>
                 </thead>
@@ -114,24 +113,14 @@
                     <td class="px-4 py-3">{{ materiel.nom }}</td>
                     <td class="px-4 py-3">{{ materiel.categorie }}</td>
                     <td class="px-4 py-3">{{ materiel.quantite }}</td>
-                    <td class="px-4 py-3">{{ materiel.etat }}</td>
                     <td class="px-4 py-3">
                         {{ materiel.date_ajout|date:"d/m/Y H:i" }}
                     </td>
 
-                    <td class="px-4 py-3">{{ materiel.quantite_empruntee }}</td>
-<td class="px-4 py-3">{{ materiel.disponible }}</td>
+                    <td class="px-4 py-3">{{ materiel.quantite_bon }}</td>
+<td class="px-4 py-3">{{ materiel.quantite_mauvais }}</td>
 
 <td class="px-4 py-3 text-right space-x-2 flex justify-end">
-    <a href="{% url 'emprunter_materiel' materiel.id %}" 
-       class="btn btn-primary bg-blue-600 text-white px-3 py-1 rounded">
-       Emprunter
-    </a>
-
-    <a href="{% url 'rendre_materiel' materiel.id %}" 
-       class="btn btn-primary bg-blue-600 text-white px-3 py-1 rounded">
-       Rendre
-    </a>
 
     <a href="?action=edit&id={{ materiel.id }}" class="btn btn-dash btn-warning">Modifier</a>
     <a href="?action=delete&id={{ materiel.id }}" class="btn btn-soft btn-error">Supprimer</a>
@@ -172,34 +161,43 @@
                     {{ form.nom.label_tag }}
                     {{ form.nom }}
                     {% if form.nom.errors %}
-                    <p class="text-red-600 text-sm">{{ form.nom.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.nom.errors }}</p>
                     {% endif %}
                 </div>
-
+            
                 <div>
                     {{ form.categorie.label_tag }}
                     {{ form.categorie }}
                     {% if form.categorie.errors %}
-                    <p class="text-red-600 text-sm">{{ form.categorie.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.categorie.errors }}</p>
                     {% endif %}
                 </div>
-
+            
                 <div>
-                    {{ form.quantite.label_tag }}
-                    {{ form.quantite }}
-                    {% if form.quantite.errors %}
-                    <p class="text-red-600 text-sm">{{ form.quantite.errors }}</p>
-                    {% endif %}
-                </div>
+                    <!-- affichage indicatif de la quantite totale (non editable) -->
+                    <label class="block text-gray-700 mb-2">Quantité totale</label>
+                    <input type="text" readonly value="{{ edit_obj.quantite|default:0 }}" class="w-full p-2 border rounded-lg bg-gray-100">
 
-                <div>
-                    {{ form.etat.label_tag }}
-                    {{ form.etat }}
-                    {% if form.etat.errors %}
-                    <p class="text-red-600 text-sm">{{ form.etat.errors }}</p>
-                    {% endif %}
                 </div>
-            </div>
+            
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        {{ form.quantite_bon.label_tag }}
+                        {{ form.quantite_bon }}
+                        {% if form.quantite_bon.errors %}
+                            <p class="text-red-600 text-sm">{{ form.quantite_bon.errors }}</p>
+                        {% endif %}
+                    </div>
+            
+                    <div>
+                        {{ form.quantite_mauvais.label_tag }}
+                        {{ form.quantite_mauvais }}
+                        {% if form.quantite_mauvais.errors %}
+                            <p class="text-red-600 text-sm">{{ form.quantite_mauvais.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>            
 
             <div class="flex justify-end space-x-2 pt-4">
                 <a href="{% url 'liste_materiels' %}" class="btn-secondary">Annuler</a>
