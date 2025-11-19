@@ -161,5 +161,14 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
     </style>
+    <!-- Prevent browser back navigation on admin login page -->
+    <script>
+        (function () {
+            history.pushState(null, null, location.href);
+            window.addEventListener('popstate', function () {
+                history.pushState(null, null, location.href);
+            });
+        })();
+    </script>
 </body>
 </html>

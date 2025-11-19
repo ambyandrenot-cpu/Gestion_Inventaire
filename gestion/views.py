@@ -14,6 +14,29 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from django.urls import reverse, reverse_lazy
+from functools import wraps
+
+
+def no_cache(view_func):
+    """Décorateur pour ajouter des headers qui empêchent le cache côté navigateur.
+
+    Ajoute `Cache-Control: no-cache, no-store, must-revalidate`, `Pragma: no-cache`
+    et `Expires: 0` aux réponses HttpResponse retournées par la vue.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        response = view_func(request, *args, **kwargs)
+        # Si la vue retourne une HttpResponse, ajouter les headers anti-cache
+        try:
+            if isinstance(response, HttpResponse):
+                response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response['Pragma'] = 'no-cache'
+                response['Expires'] = '0'
+        except Exception:
+            pass
+        return response
+
+    return _wrapped_view
 
 def liste_materiels(request):
     action = request.GET.get("action")
@@ -129,9 +152,10 @@ def exporter_excel(request):
     return response
 
 def custom_login(request):
-    # Si l'utilisateur est déjà connecté, redirigez-le vers liste_demande
-    if request.user.is_authenticated:
-        return redirect('liste_demande')
+    # Si l'utilisateur affiche la page de login (GET) et qu'il est déjà connecté,
+    # forcer une déconnexion pour obliger une nouvelle authentification.
+    if request.method == 'GET' and request.user.is_authenticated:
+        logout(request)
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -188,9 +212,8 @@ def register_view(request):
     
     return render(request, 'gestion/login.html')
 
-@login_required
-@never_cache
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def liste_demande(request):
     # Votre logique pour afficher les demandes
     # Seuls les utilisateurs connectés peuvent accéder à cette vue
@@ -226,54 +249,60 @@ def liste_demande(request):
 @require_http_methods(["POST"])
 
 def logout_view(request):
+    """Déconnecte l'utilisateur puis affiche une page intermédiaire
+    qui nettoie le stockage et redirige vers la page de connexion.
+    Utiliser une page intermédiaire permet d'appeler `location.replace` côté
+    client pour empêcher plus efficacement le retour aux pages authentifiées.
+    """
     logout(request)
     messages.success(request, 'Vous avez été déconnecté avec succès. Veuillez vous reconnecter.')
-    return redirect('login')
+    return render(request, 'gestion/logged_out.html')
 
 
 from django.utils.http import url_has_allowed_host_and_scheme  # Ajoutez cette importation
 
 def admin_login(request):
-    # Si l'utilisateur est déjà connecté et est admin, rediriger vers le dashboard
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    
+    # Si l'utilisateur affiche la page de login admin (GET) et qu'il est déjà connecté,
+    # forcer une déconnexion pour obliger une nouvelle authentification.
+    if request.method == 'GET' and request.user.is_authenticated:
+        logout(request)
+
+    form = AuthenticationForm(request, data=request.POST or None)
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-        # Vérifier si l'utilisateur a des demandes dont le statut a changé et qui ne sont pas encore notifiées
-        to_notify = Demande.objects.filter(utilisateur=request.user, user_notified=False).exclude(statut='en_attente')
-        for d in to_notify:
-            if d.statut == 'approuvee':
-                messages.success(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été approuvée.")
-            elif d.statut == 'refusee':
-                messages.error(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été rejetée.")
-            # Marquer comme notifié
-            d.user_notified = True
-            d.save()
 
-            
-            # Redirection personnalisée pour les admins
+            # Notifications pour l'utilisateur connecté (si pertinent)
+            try:
+                to_notify = Demande.objects.filter(utilisateur=user, user_notified=False).exclude(statut='en_attente')
+                for d in to_notify:
+                    if d.statut == 'approuvee':
+                        messages.success(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été approuvée.")
+                    elif d.statut == 'refusee':
+                        messages.error(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été rejetée.")
+                    d.user_notified = True
+                    d.save()
+            except Exception:
+                pass
+
+            # Redirection personnalisée selon le type d'utilisateur
             if user.is_superuser:
                 next_url = request.POST.get('next') or request.GET.get('next')
                 if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
                     return redirect(next_url)
-                return redirect('admin_dashboard')  # Rediriger vers le dashboard admin
+                return redirect('admin_dashboard')
             else:
-                # Si un utilisateur non-admin tente de se connecter via admin_login
                 messages.error(request, "Accès réservé aux administrateurs")
+                logout(request)
                 return redirect('liste_materiels')
         else:
             messages.error(request, "Identifiants invalides pour l'accès administrateur")
-    
-    else:
-        form = AuthenticationForm()
-    
+
     return render(request, 'gestion/admin_login.html', {'form': form})
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def admin_dashboard(request):
     if not request.user.is_superuser:
         messages.error(request, "Accès non autorisé")
@@ -360,6 +389,7 @@ def admin_dashboard(request):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def emprunter_materiel(request, pk):
     """Créer une demande d'emprunt pour l'utilisateur connecté (quantité 1 par défaut).
     Le statut initial est 'en_attente'.
@@ -393,6 +423,7 @@ def emprunter_materiel(request, pk):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 @require_http_methods(["POST"])
 def annuler_demande(request, pk):
     """Permet à l'utilisateur d'annuler sa propre demande si elle est en attente.
@@ -419,6 +450,7 @@ def annuler_demande(request, pk):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def creer_demande(request):
     """Créer une demande depuis le formulaire modal sur la page demandes."""
     if request.method != 'POST':
@@ -473,6 +505,7 @@ def creer_demande(request):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def approuver_demande(request, pk):
     """Vue pour approuver une demande (accessible aux superusers/admins).
     Lors de l'approbation, on diminue la quantité totale du matériel si disponible.
@@ -512,6 +545,7 @@ def approuver_demande(request, pk):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def rejeter_demande(request, pk):
     """Vue pour rejeter une demande (accessible aux superusers/admins)."""
     if not request.user.is_superuser:
@@ -535,6 +569,7 @@ def rejeter_demande(request, pk):
 
 
 @login_required(login_url=reverse_lazy('login'))
+@no_cache
 def detail_demande(request, pk):
     """Afficher les détails d'une demande (accessible aux admins et au propriétaire)."""
     demande = get_object_or_404(Demande, id=pk)
@@ -554,5 +589,4 @@ def logout_admin(request):
         username = request.user.username
         logout(request)
         messages.success(request, f"Déconnexion réussie. À bientôt {username}!")
-    
-    return redirect('admin_login')
+    return render(request, 'gestion/logged_out.html')
