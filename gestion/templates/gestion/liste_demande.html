@@ -104,6 +104,69 @@
             </div>
         </div>
 
+        <!-- Section Mes demandes -->
+        <div id="mes-demandes" class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-list me-2"></i>Mes demandes</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container border rounded">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead class="sticky-header table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Matériel</th>
+                                        <th>Quantité</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for d in demandes %}
+                                    <tr class="hover-row">
+                                        <td>{{ d.id }}</td>
+                                        <td>{{ d.materiel.nom }}</td>
+                                        <td>{{ d.quantite_demandee }}</td>
+                                        <td>{{ d.date_demande|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            {% if d.statut == 'en_attente' %}
+                                                <span class="badge bg-warning text-dark">En attente</span>
+                                            {% elif d.statut == 'approuvee' %}
+                                                <span class="badge bg-success">Approuvée</span>
+                                            {% elif d.statut == 'refusee' %}
+                                                <span class="badge bg-danger">Rejetée</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ d.statut }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-inline">
+                                                {% if d.statut == 'en_attente' %}
+                                                <form method="post" action="{% url 'annuler_demande' d.id %}" class="d-inline" onsubmit="return confirm('Confirmer annulation de la demande ?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger me-2">Annuler</button>
+                                                </form>
+                                                {% endif %}
+                                                <a href="{% url 'detail_demande' d.id %}" class="btn btn-sm btn-outline-primary">Détails</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">Aucune demande trouvée.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Section Liste des Matériels -->
         <div class="row">
             <div class="col-12">
@@ -140,9 +203,20 @@
                                         </td>
                                         <td class="px-4 py-3 text-end">
                                             {% if materiel.quantite_bon > 0 %}
-                                            <a href="{% url 'emprunter_materiel' materiel.id %}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-hand-holding me-1"></i> Emprunter
-                                            </a>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <!-- Quick borrow link: crée une demande de quantité 1 directement -->
+                                                <a href="{% url 'emprunter_materiel' materiel.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-bolt me-1"></i> Emprunter 1
+                                                </a>
+
+                                                <!-- Modal-based request for custom quantity -->
+                                                <button class="btn btn-outline-success btn-sm emprunter-btn" 
+                                                        data-bs-toggle="modal" data-bs-target="#empruntModal"
+                                                        data-id="{{ materiel.id }}" data-nom="{{ materiel.nom }}"
+                                                        data-available="{{ materiel.quantite_bon }}">
+                                                    <i class="fas fa-hand-holding me-1"></i> Demande
+                                                </button>
+                                            </div>
                                             {% else %}
                                             <button class="btn btn-secondary btn-sm" disabled>
                                                 <i class="fas fa-times me-1"></i> Indisponible
@@ -172,5 +246,69 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Modal for emprunt -->
+        <div class="modal fade" id="empruntModal" tabindex="-1" aria-labelledby="empruntModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'creer_demande' %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="empruntModalLabel">Demande d'emprunt</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                <input type="hidden" name="materiel_id" id="modal-materiel-id">
+
+                                <div class="mb-3">
+                                        <label class="form-label">Nom</label>
+                                        <input type="text" name="nom" id="modal-nom" class="form-control" value="{{ user.get_full_name|default:user.username }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" name="email" id="modal-email" class="form-control" value="{{ user.email }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                        <label class="form-label">Matériel</label>
+                                        <input type="text" id="modal-materiel-nom" class="form-control" readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                        <label class="form-label">Quantité</label>
+                                        <input type="number" name="quantite" id="modal-quantite" class="form-control" min="1" value="1" required>
+                                        <div class="form-text" id="modal-available-text"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                        <label class="form-label">Raison (optionnel)</label>
+                                        <textarea name="raison" class="form-control" rows="2"></textarea>
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Populate modal when clicking emprunter
+            document.querySelectorAll('.emprunter-btn').forEach(function(btn){
+                    btn.addEventListener('click', function(){
+                            var id = this.dataset.id;
+                            var nom = this.dataset.nom;
+                            var available = this.dataset.available;
+                            document.getElementById('modal-materiel-id').value = id;
+                            document.getElementById('modal-materiel-nom').value = nom;
+                            document.getElementById('modal-available-text').textContent = 'Disponible en bon état : ' + available + ' unité(s)';
+                            var qInput = document.getElementById('modal-quantite');
+                            qInput.max = available;
+                            if (parseInt(qInput.value) > parseInt(available)) qInput.value = available;
+                    });
+            });
+        </script>
 </body>
 </html>

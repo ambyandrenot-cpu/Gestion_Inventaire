@@ -109,9 +109,7 @@
                 <i class="fas fa-cog mr-2"></i> Admin Django
             </a>
 
-            <a href="{% url 'liste_materiels' %}" class="btn btn-secondary">
-                <i class="fas fa-home mr-2"></i> Vue Normale
-            </a>
+            <!-- Bouton 'Vue Normale' supprimé pour l'interface admin -->
         </div>
 
         <!-- Recherche -->
@@ -175,7 +173,7 @@
 
         {% if demandes_par_utilisateur %}
             {% for utilisateur, demandes in demandes_par_utilisateur.items %}
-            <div class="mb-6 border rounded-lg p-4 bg-gray-50">
+            <div id="user-{{ utilisateur.id }}" class="mb-6 border rounded-lg p-4 bg-gray-50">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-lg font-semibold text-blue-900">
                         <i class="fas fa-user mr-2"></i>{{ utilisateur.username }}
@@ -190,6 +188,7 @@
                             <tr>
                                 <th class="px-3 py-2">Date Demande</th>
                                 <th class="px-3 py-2">Matériel</th>
+                                <th class="px-3 py-2">Demandeur</th>
                                 <th class="px-3 py-2">Quantité</th>
                                 <th class="px-3 py-2">Statut</th>
                                 <th class="px-3 py-2">Raison</th>
@@ -201,6 +200,7 @@
                             <tr class="border-t hover:bg-white transition">
                                 <td class="px-3 py-2">{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
                                 <td class="px-3 py-2 font-medium">{{ demande.materiel.nom }}</td>
+                                <td class="px-3 py-2">{{ demande.nom_demandeur|default:demande.utilisateur.username }}</td>
                                 <td class="px-3 py-2">{{ demande.quantite_demandee }}</td>
                                 <td class="px-3 py-2">
                                     <span class="badge {% if demande.statut == 'en_attente' %}badge-warning
@@ -212,12 +212,18 @@
                                 <td class="px-3 py-2">{{ demande.raison|default:"-"|truncatewords:10 }}</td>
                                 <td class="px-3 py-2 space-x-1">
                                     {% if demande.statut == 'en_attente' %}
-                                    <a href="{% url 'approuver_demande' demande.id %}" class="btn btn-success btn-xs">
-                                        <i class="fas fa-check"></i>
-                                    </a>
-                                    <a href="{% url 'rejeter_demande' demande.id %}" class="btn btn-error btn-xs">
-                                        <i class="fas fa-times"></i>
-                                    </a>
+                                    <form method="post" action="{% url 'approuver_demande' demande.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-xs" onclick="return confirm('Approuver cette demande ?');">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'rejeter_demande' demande.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error btn-xs" onclick="return confirm('Rejeter cette demande ?');">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
                                     {% endif %}
                                     <a href="{% url 'detail_demande' demande.id %}" class="btn btn-info btn-xs">
                                         <i class="fas fa-eye"></i>
@@ -256,6 +262,50 @@
             <i class="fas fa-times-circle text-3xl text-red-600 mb-2"></i>
             <h3 class="font-semibold text-red-800">Rejetées</h3>
             <p class="text-2xl font-bold text-red-700">{{ demandes_rejetees }}</p>
+        </div>
+    </div>
+
+    <!-- TABLEAU : TOUTES LES DEMANDES -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-purple-900">
+            <i class="fas fa-clipboard-list mr-2"></i>Toutes les demandes
+        </h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-3 py-2">Date</th>
+                        <th class="px-3 py-2">Demandeur</th>
+                        <th class="px-3 py-2">Matériel</th>
+                        <th class="px-3 py-2">Quantité</th>
+                        <th class="px-3 py-2">Statut</th>
+                        <th class="px-3 py-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demande in all_demandes %}
+                    <tr class="border-t hover:bg-white transition">
+                        <td class="px-3 py-2">{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                        <td class="px-3 py-2">{{ demande.nom_demandeur|default:demande.utilisateur.username }}</td>
+                        <td class="px-3 py-2">{{ demande.materiel.nom }}</td>
+                        <td class="px-3 py-2">{{ demande.quantite_demandee }}</td>
+                        <td class="px-3 py-2">{{ demande.get_statut_display }}</td>
+                        <td class="px-3 py-2">
+                            {% if demande.statut == 'en_attente' %}
+                                <a href="{% url 'approuver_demande' demande.id %}" class="btn btn-success btn-xs"><i class="fas fa-check"></i></a>
+                                <a href="{% url 'rejeter_demande' demande.id %}" class="btn btn-error btn-xs"><i class="fas fa-times"></i></a>
+                            {% endif %}
+                            <a href="{% url 'detail_demande' demande.id %}" class="btn btn-info btn-xs"><i class="fas fa-eye"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-gray-500">Aucune demande enregistrée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 

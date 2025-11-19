@@ -20,5 +20,10 @@ urlpatterns = [
     
     path('demandes/', views.liste_demande, name='liste_demande'),
     path('emprunter/<int:pk>/', views.emprunter_materiel, name='emprunter_materiel'),
+    path('demande/approuver/<int:pk>/', views.approuver_demande, name='approuver_demande'),
+    path('demande/rejeter/<int:pk>/', views.rejeter_demande, name='rejeter_demande'),
+    path('demande/<int:pk>/', views.detail_demande, name='detail_demande'),
+    path('demande/annuler/<int:pk>/', views.annuler_demande, name='annuler_demande'),
+    path('demande/creer/', views.creer_demande, name='creer_demande'),
     path('admin_logout/', views.logout_admin, name='logout_admin'),
 ]

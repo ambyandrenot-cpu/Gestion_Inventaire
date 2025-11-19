@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 
 def liste_materiels(request):
     action = request.GET.get("action")
@@ -195,8 +195,12 @@ def liste_demande(request):
     # Votre logique pour afficher les demandes
     # Seuls les utilisateurs connectés peuvent accéder à cette vue
     try:
-        demandes = Demande.objects.all().order_by('-date_demande')
-    except:
+        # Montrer seulement les demandes du user connecté (les admins peuvent voir tout depuis le dashboard)
+        if request.user.is_superuser:
+            demandes = Demande.objects.all().order_by('-date_demande')
+        else:
+            demandes = Demande.objects.filter(utilisateur=request.user).order_by('-date_demande')
+    except Exception:
         demandes = []
 
     # Matériels à afficher dans le tableau (ceux présents en base)
@@ -239,6 +243,17 @@ def admin_login(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
+        # Vérifier si l'utilisateur a des demandes dont le statut a changé et qui ne sont pas encore notifiées
+        to_notify = Demande.objects.filter(utilisateur=request.user, user_notified=False).exclude(statut='en_attente')
+        for d in to_notify:
+            if d.statut == 'approuvee':
+                messages.success(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été approuvée.")
+            elif d.statut == 'refusee':
+                messages.error(request, f"Votre demande pour '{d.materiel.nom}' ({d.quantite_demandee}) a été rejetée.")
+            # Marquer comme notifié
+            d.user_notified = True
+            d.save()
+
             
             # Redirection personnalisée pour les admins
             if user.is_superuser:
@@ -312,6 +327,9 @@ def admin_dashboard(request):
         user_key = d.utilisateur
         demandes_par_utilisateur.setdefault(user_key, []).append(d)
 
+    # Liste complète des demandes (pour tableau administrateur)
+    all_demandes = Demande.objects.select_related('utilisateur', 'materiel').all().order_by('-date_demande')
+
     demandes_en_attente = Demande.objects.filter(statut='en_attente').count()
     demandes_approuvees = Demande.objects.filter(statut='approuvee').count()
     demandes_rejetees = Demande.objects.filter(statut='refusee').count()
@@ -330,6 +348,7 @@ def admin_dashboard(request):
         'edit_obj': edit_obj,
         'delete_obj': delete_obj,
         'demandes_par_utilisateur': demandes_par_utilisateur,
+        'all_demandes': all_demandes,
         'demandes_en_attente': demandes_en_attente,
         'demandes_approuvees': demandes_approuvees,
         'demandes_rejetees': demandes_rejetees,
@@ -358,13 +377,174 @@ def emprunter_materiel(request, pk):
             utilisateur=request.user,
             materiel=materiel,
             quantite_demandee=1,
-            statut='en_attente'
+            statut='en_attente',
+            nom_demandeur=(request.user.get_full_name() or request.user.username),
+            email_demandeur=request.user.email
         )
         messages.success(request, f"Demande d'emprunt pour '{materiel.nom}' enregistrée.")
     except Exception as e:
         messages.error(request, f"Erreur lors de la création de la demande: {e}")
 
-    return redirect('liste_demande')
+    # Rediriger vers la section 'Mes demandes' pour que l'utilisateur voie immédiatement sa demande
+    try:
+        return redirect(reverse('liste_demande') + '#mes-demandes')
+    except Exception:
+        return redirect('liste_demande')
+
+
+@login_required(login_url=reverse_lazy('login'))
+@require_http_methods(["POST"])
+def annuler_demande(request, pk):
+    """Permet à l'utilisateur d'annuler sa propre demande si elle est en attente.
+    Suppression définitive de la demande (option simple).
+    """
+    # Récupérer la demande en s'assurant que c'est bien le propriétaire
+    demande = get_object_or_404(Demande, id=pk, utilisateur=request.user)
+
+    # Vérifier statut
+    if demande.statut != 'en_attente':
+        messages.error(request, "Seules les demandes en attente peuvent être annulées.")
+        try:
+            return redirect(reverse('liste_demande') + '#mes-demandes')
+        except Exception:
+            return redirect('liste_demande')
+
+    # Supprimer la demande
+    demande.delete()
+    messages.success(request, "Votre demande a été annulée.")
+    try:
+        return redirect(reverse('liste_demande') + '#mes-demandes')
+    except Exception:
+        return redirect('liste_demande')
+
+
+@login_required(login_url=reverse_lazy('login'))
+def creer_demande(request):
+    """Créer une demande depuis le formulaire modal sur la page demandes."""
+    if request.method != 'POST':
+        messages.error(request, "Méthode non autorisée")
+        return redirect('liste_demande')
+
+    materiel_id = request.POST.get('materiel_id')
+    quantite = request.POST.get('quantite')
+    nom = request.POST.get('nom')
+    email = request.POST.get('email')
+    raison = request.POST.get('raison', '')
+
+    if not materiel_id or not quantite:
+        messages.error(request, "Données incomplètes pour la demande.")
+        return redirect('liste_demande')
+
+    try:
+        materiel = Materiel.objects.get(id=int(materiel_id))
+        qte = int(quantite)
+    except Exception:
+        messages.error(request, "Matériel ou quantité invalide.")
+        return redirect('liste_demande')
+
+    if qte <= 0:
+        messages.error(request, "La quantité doit être au moins 1.")
+        return redirect('liste_demande')
+
+    if materiel.quantite_bon < qte:
+        messages.error(request, "Quantité demandée supérieure à la quantité disponible en bon état.")
+        return redirect('liste_demande')
+
+    # Utilisateur connecté sera le propriétaire ; nom/email sont des champs informatifs
+    try:
+        Demande.objects.create(
+            utilisateur=request.user,
+            materiel=materiel,
+            quantite_demandee=qte,
+            statut='en_attente',
+            raison=raison,
+            nom_demandeur=nom or (request.user.get_full_name() or request.user.username),
+            email_demandeur=email or request.user.email,
+        )
+        messages.success(request, "Demande envoyée à l'administrateur.")
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la création de la demande: {e}")
+
+    try:
+        return redirect(reverse('liste_demande') + '#mes-demandes')
+    except Exception:
+        return redirect('liste_demande')
+
+
+
+@login_required(login_url=reverse_lazy('login'))
+def approuver_demande(request, pk):
+    """Vue pour approuver une demande (accessible aux superusers/admins).
+    Lors de l'approbation, on diminue la quantité totale du matériel si disponible.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, "Accès non autorisé")
+        return redirect('liste_materiels')
+
+    demande = get_object_or_404(Demande, id=pk)
+    materiel = demande.materiel
+    qte = demande.quantite_demandee
+
+    if demande.statut == 'approuvee':
+        messages.info(request, "Cette demande est déjà approuvée.")
+        return redirect('admin_dashboard')
+
+    if materiel.quantite_bon < qte:
+        messages.error(request, "Quantité insuffisante pour approuver la demande.")
+        return redirect('admin_dashboard')
+
+    # Réduire la quantité totale (le save() du modèle réajustera quantite_bon)
+    materiel.quantite = materiel.quantite - qte
+    if materiel.quantite < 0:
+        materiel.quantite = 0
+    materiel.save()
+
+    demande.statut = 'approuvee'
+    # Marquer pour notification utilisateur
+    demande.user_notified = False
+    demande.save()
+    messages.success(request, f"Demande #{demande.id} approuvée.")
+    # Rediriger vers le bloc utilisateur concerné pour mise à jour visuelle
+    try:
+        return redirect(reverse('admin_dashboard') + f'#user-{demande.utilisateur.id}')
+    except Exception:
+        return redirect('admin_dashboard')
+
+
+@login_required(login_url=reverse_lazy('login'))
+def rejeter_demande(request, pk):
+    """Vue pour rejeter une demande (accessible aux superusers/admins)."""
+    if not request.user.is_superuser:
+        messages.error(request, "Accès non autorisé")
+        return redirect('liste_materiels')
+
+    demande = get_object_or_404(Demande, id=pk)
+    if demande.statut == 'refusee':
+        messages.info(request, "Cette demande est déjà rejetée.")
+        return redirect('admin_dashboard')
+
+    demande.statut = 'refusee'
+    demande.user_notified = False
+    demande.save()
+    messages.success(request, f"Demande #{demande.id} rejetée.")
+    # Rediriger vers le bloc utilisateur concerné pour mise à jour visuelle
+    try:
+        return redirect(reverse('admin_dashboard') + f'#user-{demande.utilisateur.id}')
+    except Exception:
+        return redirect('admin_dashboard')
+
+
+@login_required(login_url=reverse_lazy('login'))
+def detail_demande(request, pk):
+    """Afficher les détails d'une demande (accessible aux admins et au propriétaire)."""
+    demande = get_object_or_404(Demande, id=pk)
+
+    # Autoriser l'accès au propriétaire ou aux admins
+    if not (request.user.is_superuser or demande.utilisateur == request.user):
+        messages.error(request, "Accès non autorisé à cette demande.")
+        return redirect('liste_materiels')
+
+    return render(request, 'gestion/detail_demande.html', {'demande': demande})
 
 
 

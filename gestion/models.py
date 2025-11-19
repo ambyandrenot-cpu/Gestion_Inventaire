@@ -107,6 +107,11 @@ class Demande(models.Model):
     utilisateur = models.ForeignKey(User, on_delete=models.CASCADE)
     materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
     quantite_demandee = models.IntegerField()
+    # Enregistrer aussi le nom/email saisis par le demandeur (facultatif)
+    nom_demandeur = models.CharField(max_length=150, blank=True, null=True)
+    email_demandeur = models.EmailField(blank=True, null=True)
+    # Indique si l'utilisateur a été notifié du changement de statut
+    user_notified = models.BooleanField(default=False)
     date_demande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=[
         ('en_attente', 'En attente'),
