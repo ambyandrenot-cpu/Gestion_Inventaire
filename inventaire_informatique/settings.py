@@ -135,3 +135,4 @@ LOGIN_URL = '/custom_login/'
 LOGIN_REDIRECT_URL = '/demandes/'
 LOGOUT_REDIRECT_URL = 'custom_login/'
 
+ADMIN_LOGIN_REDIRECT_URL = '/admin-dashboard/'

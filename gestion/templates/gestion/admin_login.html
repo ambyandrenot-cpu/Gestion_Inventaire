@@ -50,65 +50,68 @@
                 {% endif %}
 
                 <!-- Formulaire de connexion -->
-                <form method="post" class="space-y-6">
-                    {% csrf_token %}
+              <!-- Dans votre template admin_login.html -->
+<form method="post" action="{% url 'admin_login' %}" class="space-y-6">
+    {% csrf_token %}
+    <!-- ... le reste de votre formulaire -->
+    <!-- Champ username -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold text-gray-700">
+                <i class="fas fa-user mr-2"></i>Nom d'administrateur
+            </span>
+        </label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <label class="label">
+            <span class="label-text-alt text-red-600">
+                {% for error in form.username.errors %}
+                <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
+                {% endfor %}
+            </span>
+        </label>
+        {% endif %}
+    </div>
+    
+    <!-- Champ password -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold text-gray-700">
+                <i class="fas fa-lock mr-2"></i>Mot de passe administrateur
+            </span>
+        </label>
+        {{ form.password }}
+        {% if form.password.errors %}
+        <label class="label">
+            <span class="label-text-alt text-red-600">
+                {% for error in form.password.errors %}
+                <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
+                {% endfor %}
+            </span>
+        </label>
+        {% endif %}
+    </div>
+    
+    <!-- Erreurs générales du formulaire -->
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">
+        <div class="flex-1">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            {% for error in form.non_field_errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Bouton de connexion -->
+    <button type="submit" class="btn btn-primary w-full py-3 text-lg font-semibold">
+        <i class="fas fa-sign-in-alt mr-2"></i>
+        Connexion Administrateur
+    </button>
+</form>
                     
-                    <!-- Champ username -->
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold text-gray-700">
-                                <i class="fas fa-user mr-2"></i>Nom d'administrateur
-                            </span>
-                        </label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                        <label class="label">
-                            <span class="label-text-alt text-red-600">
-                                {% for error in form.username.errors %}
-                                <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
-                                {% endfor %}
-                            </span>
-                        </label>
-                        {% endif %}
-                    </div>
-
-                    <!-- Champ password -->
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold text-gray-700">
-                                <i class="fas fa-lock mr-2"></i>Mot de passe administrateur
-                            </span>
-                        </label>
-                        {{ form.password }}
-                        {% if form.password.errors %}
-                        <label class="label">
-                            <span class="label-text-alt text-red-600">
-                                {% for error in form.password.errors %}
-                                <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
-                                {% endfor %}
-                            </span>
-                        </label>
-                        {% endif %}
-                    </div>
-
-                    <!-- Erreurs générales du formulaire -->
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-error">
-                        <div class="flex-1">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            {% for error in form.non_field_errors %}
-                            <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Bouton de connexion -->
-                    <button type="submit" class="btn btn-primary w-full py-3 text-lg font-semibold">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
-                        Connexion Administrateur
-                    </button>
-                </form>
+              
 
                 <!-- Séparateur -->
                 <div class="divider my-8">OU</div>

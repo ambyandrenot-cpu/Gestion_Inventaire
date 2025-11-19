@@ -8,12 +8,17 @@ urlpatterns = [
     path("materiel/modifier/<int:pk>/", views.modifier_materiel, name="edit_materiel"),
     path("materiel/supprimer/<int:pk>/", views.supprimer_materiel, name="delete_materiel"),
     path("export-excel/", views.exporter_excel, name="export_excel"),
-     path('login/', auth_views.LoginView.as_view(
-        template_name='gestion/login.html',  # ← chemin complet
-        redirect_authenticated_user=True
-    ), name='login'),
-       path('logout/', views.logout_view, name='logout'),
-    path('demandes/', views.liste_demande, name='liste_demande'),
+    
+    # URLs d'authentification
+    path('login/', views.custom_login, name='login'),  # Utilise votre vue custom_login
+    path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
-    path('custom_login/', auth_views.LoginView.as_view(template_name='login.html'), name='custom_login'),
+    
+    # URLs admin - IMPORTANT: utilisez vos vues personnalisées
+    path('admin_login/', views.admin_login, name='admin_login'),  # ← Votre vue personnalisée
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    
+    path('demandes/', views.liste_demande, name='liste_demande'),
+    path('emprunter/<int:pk>/', views.emprunter_materiel, name='emprunter_materiel'),
+    path('admin_logout/', views.logout_admin, name='logout_admin'),
 ]

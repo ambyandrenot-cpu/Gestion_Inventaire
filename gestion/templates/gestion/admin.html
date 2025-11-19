@@ -98,7 +98,9 @@
             <a href="?action=add" class="btn btn-outline btn-success">
                 <i class="fas fa-plus mr-2"></i> Ajouter Matériel
             </a>
-
+            <a href="{% url 'logout_admin' %}" class="btn btn-error">
+    <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
+</a>
             <a href="{% url 'export_excel' %}" class="btn btn-dash btn-warning">
                 <i class="fas fa-file-excel mr-2"></i> Export Excel
             </a>
@@ -277,6 +279,7 @@
         <form method="post"
               action="{% if action == 'add' %}{% url 'add_materiel' %}{% else %}{% url 'edit_materiel' edit_obj.id %}{% endif %}">
             {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
 
             <div class="space-y-4">
                 <div>
@@ -348,6 +351,7 @@
 
             <form method="post" action="{% url 'delete_materiel' delete_obj.id %}">
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <button type="submit" class="btn-danger">Confirmer</button>
             </form>
         </div>
