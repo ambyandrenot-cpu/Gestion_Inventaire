@@ -79,20 +79,7 @@
             </div>
         </div>
 
-        <!-- Liens de connexion réordonnés -->
-        <div class="flex space-x-2 ml-6">
-            <a href="{% url 'login' %}" class="btn btn-outline">Connexion</a>
-            <a href="{% url 'admin_login' %}" class="btn btn-primary">Connexion admin</a>
-        </div>
-    </div>
 
-    <!-- QR CODE : scanner pour ouvrir cette page -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
-        <p class="mb-2 font-semibold text-lg">Accès rapide (QR code)</p>
-        <p class="text-sm text-gray-500 mb-4">Scannez ce QR code depuis un autre appareil pour accéder à cette page.</p>
-        <div class="flex justify-center">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ request.build_absolute_uri|urlencode }}" alt="QR code" class="mx-auto" />
-        </div>
     </div>
 
     <!-- TABLEAU PUBLIC (masqué) -->
